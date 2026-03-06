@@ -15,7 +15,7 @@
       {
         "name": "vm",
         "type": "query",
-        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
         "query": "label_values(fcsc_bot_info, vm)",
         "refresh": 2,
         "sort": 1,
@@ -38,7 +38,7 @@
       "title": "Bot Status",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_bot_running{vm=\"$vm\"}",
@@ -70,7 +70,7 @@
       "title": "Git Branch",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_bot_info{vm=\"$vm\"}",
@@ -95,7 +95,7 @@
       "title": "RPC",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_rpc_up{vm=\"$vm\"}",
@@ -124,7 +124,7 @@
       "title": "ClickHouse",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_clickhouse_up{vm=\"$vm\"}",
@@ -153,7 +153,7 @@
       "title": "Geyser Recv Rate",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_recv_rate{vm=\"$vm\"}",
@@ -183,7 +183,7 @@
       "title": "Log Age",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "time() - fcsc_log_last_line_timestamp{vm=\"$vm\"}",
@@ -222,7 +222,7 @@
       "title": "Geyser Receive Rate",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_recv_rate{vm=\"$vm\"}",
@@ -257,7 +257,7 @@
       "title": "Geyser Backlog",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_backlog{vm=\"$vm\"}",
@@ -294,7 +294,7 @@
       "title": "Geyser Total In/Out",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_total_in{vm=\"$vm\"}",
@@ -334,7 +334,7 @@
       "title": "Queue Send Rates",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 15 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_queue_send_rate{vm=\"$vm\"}",
@@ -362,7 +362,7 @@
       "title": "Queue Receive Rates",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 15 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_queue_recv_rate{vm=\"$vm\"}",
@@ -390,7 +390,7 @@
       "title": "Queue Backlogs",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 15 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_queue_backlog{vm=\"$vm\"}",
@@ -433,7 +433,7 @@
       "title": "Recent Logs",
       "type": "logs",
       "gridPos": { "h": 12, "w": 24, "x": 0, "y": 24 },
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "datasource": { "type": "loki", "uid": "DS_LOKI" },
       "targets": [
         {
           "expr": "{vm=\"$vm\", job=\"arb-bot\"}",

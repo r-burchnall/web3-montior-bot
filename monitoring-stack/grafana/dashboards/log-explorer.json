@@ -16,7 +16,7 @@
         "name": "vm",
         "label": "VM",
         "type": "query",
-        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "datasource": { "type": "loki", "uid": "DS_LOKI" },
         "query": "label_values({job=\"arb-bot\"}, vm)",
         "refresh": 2,
         "sort": 1,
@@ -57,7 +57,7 @@
       "title": "Log Volume by VM",
       "type": "timeseries",
       "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "datasource": { "type": "loki", "uid": "DS_LOKI" },
       "targets": [
         {
           "expr": "sum by (vm) (count_over_time({job=\"arb-bot\", vm=~\"$vm\"} [1m]))",
@@ -85,7 +85,7 @@
       "title": "Error & Warning Rate",
       "type": "timeseries",
       "gridPos": { "h": 6, "w": 24, "x": 0, "y": 6 },
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "datasource": { "type": "loki", "uid": "DS_LOKI" },
       "targets": [
         {
           "expr": "sum by (vm) (count_over_time({job=\"arb-bot\", vm=~\"$vm\"} |~ \"ERROR|WARN\" [1m]))",
@@ -113,7 +113,7 @@
       "title": "Log Stream",
       "type": "logs",
       "gridPos": { "h": 20, "w": 24, "x": 0, "y": 12 },
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "datasource": { "type": "loki", "uid": "DS_LOKI" },
       "targets": [
         {
           "expr": "{job=\"arb-bot\", vm=~\"$vm\"} |~ \"(?i)$level\" |~ \"(?i)$search\"",
@@ -143,7 +143,7 @@
           "title": "Arb Executions",
           "type": "logs",
           "gridPos": { "h": 10, "w": 24, "x": 0, "y": 33 },
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "DS_LOKI" },
           "targets": [
             {
               "expr": "{job=\"arb-bot\", vm=~\"$vm\"} |~ \"(?i)(arb.*execut|sent_arb|landed_arb|profit)\"",
@@ -163,7 +163,7 @@
           "title": "Geyser Events",
           "type": "logs",
           "gridPos": { "h": 10, "w": 24, "x": 0, "y": 43 },
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "DS_LOKI" },
           "targets": [
             {
               "expr": "{job=\"arb-bot\", vm=~\"$vm\"} |~ \"(?i)(geyser|QUEUE.*geyser)\"",
@@ -183,7 +183,7 @@
           "title": "Errors Only",
           "type": "logs",
           "gridPos": { "h": 10, "w": 24, "x": 0, "y": 53 },
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "DS_LOKI" },
           "targets": [
             {
               "expr": "{job=\"arb-bot\", vm=~\"$vm\"} |~ \"ERROR\"",
@@ -203,7 +203,7 @@
           "title": "Pool Loading",
           "type": "logs",
           "gridPos": { "h": 10, "w": 24, "x": 0, "y": 63 },
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "DS_LOKI" },
           "targets": [
             {
               "expr": "{job=\"arb-bot\", vm=~\"$vm\"} |~ \"(?i)(pool.*load|pool.*reload|TITAN RELOAD|Finished pool loading)\"",

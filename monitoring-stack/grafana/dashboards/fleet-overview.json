@@ -20,7 +20,7 @@
       "description": "Green = receiving updates, Yellow = 1-2 missed checks, Red = 3+ missed or bot down",
       "type": "stat",
       "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_recv_rate",
@@ -68,7 +68,7 @@
       "title": "Bot Process Status",
       "type": "stat",
       "gridPos": { "h": 4, "w": 24, "x": 0, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_bot_running",
@@ -114,7 +114,7 @@
       "title": "Connectivity Matrix",
       "type": "table",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_bot_running",
@@ -278,7 +278,7 @@
       "title": "Geyser Receive Rate (All VMs)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_recv_rate",
@@ -308,7 +308,7 @@
       "title": "Geyser Backlog (All VMs)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "fcsc_geyser_backlog",
@@ -344,7 +344,7 @@
       "title": "Log Freshness (seconds since last log line)",
       "type": "stat",
       "gridPos": { "h": 4, "w": 24, "x": 0, "y": 26 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "DS_PROMETHEUS" },
       "targets": [
         {
           "expr": "time() - fcsc_log_last_line_timestamp",
