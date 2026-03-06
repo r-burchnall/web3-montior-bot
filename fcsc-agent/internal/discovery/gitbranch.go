@@ -12,7 +12,7 @@ func GitBranch(repoDir string) string {
 		return "unknown"
 	}
 
-	cmd := exec.Command("git", "-C", repoDir, "rev-parse", "--abbrev-ref", "HEAD")
+	cmd := exec.Command("git", "-c", "safe.directory="+repoDir, "-C", repoDir, "rev-parse", "--abbrev-ref", "HEAD")
 	out, err := cmd.Output()
 	if err != nil {
 		return "unknown"
