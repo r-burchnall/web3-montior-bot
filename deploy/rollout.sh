@@ -15,6 +15,12 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_ROOT/build"
 VMS_FILE="$SCRIPT_DIR/vms.conf"
 
+# Use sudo for lxc if not running as root and lxc requires it
+LXC="lxc"
+if [ "$(id -u)" -ne 0 ] && ! lxc list --format csv -c n 2>/dev/null | head -1 > /dev/null 2>&1; then
+    LXC="sudo lxc"
+fi
+
 AGENT_ONLY=false
 PROMTAIL_ONLY=false
 SPECIFIC_VMS=()
@@ -55,7 +61,7 @@ for vm in "${VMS[@]}"; do
     echo "--- $vm ---"
 
     # Check VM is accessible
-    if ! lxc info "$vm" &> /dev/null; then
+    if ! $LXC info "$vm" &> /dev/null; then
         echo "  SKIP: VM '$vm' not found or not accessible."
         FAILED+=("$vm")
         continue
@@ -64,43 +70,43 @@ for vm in "${VMS[@]}"; do
     # Deploy agent
     if [ "$PROMTAIL_ONLY" = false ]; then
         echo "  Pushing agent binary..."
-        lxc file push "$BUILD_DIR/fcsc-agent" "$vm/tmp/fcsc-agent"
+        $LXC file push "$BUILD_DIR/fcsc-agent" "$vm/tmp/fcsc-agent"
 
         echo "  Pushing service file..."
-        lxc file push "$SCRIPT_DIR/fcsc-agent.service" "$vm/tmp/fcsc-agent.service"
+        $LXC file push "$SCRIPT_DIR/fcsc-agent.service" "$vm/tmp/fcsc-agent.service"
 
         echo "  Pushing installer..."
-        lxc file push "$SCRIPT_DIR/install-agent.sh" "$vm/tmp/install-agent.sh"
+        $LXC file push "$SCRIPT_DIR/install-agent.sh" "$vm/tmp/install-agent.sh"
 
         echo "  Running installer..."
-        lxc exec "$vm" -- chmod +x /tmp/install-agent.sh
+        $LXC exec "$vm" -- chmod +x /tmp/install-agent.sh
         if lxc exec "$vm" -- /tmp/install-agent.sh; then
             echo "  Agent: OK"
         else
             echo "  Agent: FAILED"
             FAILED+=("$vm:agent")
         fi
-        lxc exec "$vm" -- rm -f /tmp/install-agent.sh
+        $LXC exec "$vm" -- rm -f /tmp/install-agent.sh
     fi
 
     # Deploy promtail
     if [ "$AGENT_ONLY" = false ]; then
         echo "  Pushing promtail config..."
-        lxc file push "$SCRIPT_DIR/promtail-config.yaml" "$vm/tmp/promtail-config.yaml"
-        lxc file push "$SCRIPT_DIR/promtail.service" "$vm/tmp/promtail.service"
+        $LXC file push "$SCRIPT_DIR/promtail-config.yaml" "$vm/tmp/promtail-config.yaml"
+        $LXC file push "$SCRIPT_DIR/promtail.service" "$vm/tmp/promtail.service"
 
         echo "  Pushing promtail installer..."
-        lxc file push "$SCRIPT_DIR/install-promtail.sh" "$vm/tmp/install-promtail.sh"
+        $LXC file push "$SCRIPT_DIR/install-promtail.sh" "$vm/tmp/install-promtail.sh"
 
         echo "  Running promtail installer..."
-        lxc exec "$vm" -- chmod +x /tmp/install-promtail.sh
+        $LXC exec "$vm" -- chmod +x /tmp/install-promtail.sh
         if lxc exec "$vm" -- /tmp/install-promtail.sh; then
             echo "  Promtail: OK"
         else
             echo "  Promtail: FAILED"
             FAILED+=("$vm:promtail")
         fi
-        lxc exec "$vm" -- rm -f /tmp/install-promtail.sh
+        $LXC exec "$vm" -- rm -f /tmp/install-promtail.sh
     fi
 
     echo ""
