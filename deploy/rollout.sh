@@ -52,12 +52,15 @@ if [ "$PROMTAIL_ONLY" = false ] && [ ! -f "$BUILD_DIR/fcsc-agent" ]; then
     exit 1
 fi
 
-# Push a file into a container
+# Push a file into a container via lxc exec (lxc file push is forbidden by LXD policy).
+# Removes any existing file first to avoid "Permission denied" from tee on
+# files owned by another user.
 push_file() {
     local src="$1"
     local vm="$2"
     local dest="$3"
-    $LXC file push "$src" "$vm$dest"
+    $LXC exec "$vm" -- rm -f "$dest"
+    cat "$src" | $LXC exec "$vm" -- tee "$dest" > /dev/null
 }
 
 echo "Deploying to ${#VMS[@]} VM(s): ${VMS[*]}"
@@ -82,6 +85,7 @@ for vm in "${VMS[@]}"; do
 
         echo "  Pushing agent binary..."
         push_file "$BUILD_DIR/fcsc-agent" "$vm" "/tmp/fcsc-agent"
+        $LXC exec "$vm" -- chmod +x /tmp/fcsc-agent
 
         echo "  Pushing service file..."
         push_file "$SCRIPT_DIR/fcsc-agent.service" "$vm" "/tmp/fcsc-agent.service"
