@@ -9,6 +9,7 @@ import (
 	"github.com/fastcarslowcar/fcsc-agent/internal/collector"
 	"github.com/fastcarslowcar/fcsc-agent/internal/config"
 	"github.com/fastcarslowcar/fcsc-agent/internal/logparser"
+	"github.com/fastcarslowcar/fcsc-agent/internal/web"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -37,12 +38,12 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
-	})
 
-	log.Printf("serving metrics on %s/metrics", cfg.ListenAddr)
+	// Web UI and health API
+	webHandler := web.NewHandler(coll)
+	webHandler.Register(mux)
+
+	log.Printf("serving on %s (web UI: /, health JSON: /health, metrics: /metrics)", cfg.ListenAddr)
 	if err := http.ListenAndServe(cfg.ListenAddr, mux); err != nil {
 		log.Fatalf("http server error: %v", err)
 	}
