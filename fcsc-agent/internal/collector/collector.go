@@ -147,6 +147,80 @@ func (c *Collector) refreshDiscovery() {
 	}
 }
 
+// HealthSnapshot holds a point-in-time view of all health data for the web UI.
+type HealthSnapshot struct {
+	Hostname       string
+	GitBranch      string
+	BotRunning     bool
+	RPCUp          bool
+	ClickHouseUp   bool
+	LogFile        string
+	LogAge         time.Duration
+	GeyserRecvRate float64
+	GeyserSendRate float64
+	GeyserBacklog  int64
+	GeyserTotalIn  int64
+	GeyserTotalOut int64
+	Queues         map[string]*logparser.QueueStats
+	LastLineTime   time.Time
+	CheckInterval  time.Duration
+	EnabledChecks  []string
+	RPCUrl         string
+	ClickHouseURL  string
+	OverallStatus  string // "healthy", "degraded", "unhealthy"
+}
+
+// Snapshot returns a HealthSnapshot for use by the web UI and JSON API.
+func (c *Collector) Snapshot() *HealthSnapshot {
+	c.mu.RLock()
+	rpcUp := c.cachedRPCUp
+	chUp := c.cachedCHUp
+	botUp := c.cachedBotUp
+	branch := c.cachedBranch
+	c.mu.RUnlock()
+
+	state := c.tailer.State()
+
+	snap := &HealthSnapshot{
+		Hostname:      c.hostname,
+		GitBranch:     branch,
+		BotRunning:    botUp == 1,
+		RPCUp:         rpcUp == 1,
+		ClickHouseUp:  chUp == 1,
+		LogFile:       c.tailer.CurrentFile(),
+		LastLineTime:  state.LastLineTime,
+		Queues:        state.Queues,
+		CheckInterval: c.cfg.CheckInterval,
+		EnabledChecks: c.cfg.EnableChecks,
+		RPCUrl:        c.cfg.RPCUrl,
+		ClickHouseURL: c.cfg.ClickHouseURL,
+	}
+
+	if !state.LastLineTime.IsZero() {
+		snap.LogAge = time.Since(state.LastLineTime)
+	}
+
+	if gs, ok := state.Queues["geyser_subscribe"]; ok {
+		snap.GeyserRecvRate = gs.RecvRate
+		snap.GeyserSendRate = gs.SendRate
+		snap.GeyserBacklog = gs.Backlog
+		snap.GeyserTotalIn = gs.TotalIn
+		snap.GeyserTotalOut = gs.TotalOut
+	}
+
+	// Determine overall status
+	snap.OverallStatus = "healthy"
+	if !snap.BotRunning && c.cfg.IsCheckEnabled("process") {
+		snap.OverallStatus = "unhealthy"
+	} else if snap.GeyserRecvRate == 0 && c.cfg.IsCheckEnabled("geyser") {
+		snap.OverallStatus = "degraded"
+	} else if (!snap.RPCUp && c.cfg.IsCheckEnabled("rpc")) || (!snap.ClickHouseUp && c.cfg.IsCheckEnabled("clickhouse")) {
+		snap.OverallStatus = "degraded"
+	}
+
+	return snap
+}
+
 // Describe implements prometheus.Collector.
 func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.botRunning
