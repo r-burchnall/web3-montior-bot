@@ -1,0 +1,99 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: monitoring-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/targets:/etc/prometheus/targets:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring
+
+  loki:
+    image: grafana/loki:3.2.1
+    container_name: monitoring-loki
+    restart: unless-stopped
+    volumes:
+      - ./loki/loki.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    command:
+      - '-config.file=/etc/loki/local-config.yaml'
+    ports:
+      - "3100:3100"
+    networks:
+      - monitoring
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: monitoring-tempo
+    restart: unless-stopped
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    command:
+      - '-config.file=/etc/tempo/tempo.yml'
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: monitoring-grafana
+    restart: unless-stopped
+    volumes:
+      - ./grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards/fcsc:ro
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "13000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - monitoring
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.1
+    container_name: clickhouse
+    restart: unless-stopped
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    networks:
+      - monitoring
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.2
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - monitoring
+
+volumes:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  grafana-data:
+  clickhouse-data:
+
+networks:
+  monitoring:
+    driver: bridge

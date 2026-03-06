@@ -1,0 +1,14 @@
+# Build artifacts
+build/
+
+# Go
+fcsc-agent/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store

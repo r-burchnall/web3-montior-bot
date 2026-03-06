@@ -1,0 +1,383 @@
+{
+  "uid": "fcsc-fleet-overview",
+  "title": "FCSC Fleet Overview",
+  "description": "At-a-glance view of all developer VMs: connectivity, geyser health, and bot status",
+  "tags": ["fcsc", "fleet"],
+  "timezone": "utc",
+  "editable": true,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Geyser Health Status",
+      "description": "Green = receiving updates, Yellow = 1-2 missed checks, Red = 3+ missed or bot down",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "fcsc_geyser_recv_rate",
+          "legendFormat": "{{ vm }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "msg/s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 1, "color": "yellow" },
+              { "value": 5, "color": "green" }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "NO DATA", "color": "red" }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Bot Process Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "fcsc_bot_running",
+          "legendFormat": "{{ vm }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 1, "color": "green" }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
+          ]
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Connectivity Matrix",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "fcsc_bot_running",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true,
+          "refId": "bot"
+        },
+        {
+          "expr": "fcsc_geyser_recv_rate",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true,
+          "refId": "geyser"
+        },
+        {
+          "expr": "fcsc_clickhouse_up",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true,
+          "refId": "clickhouse"
+        },
+        {
+          "expr": "fcsc_rpc_up",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true,
+          "refId": "rpc"
+        },
+        {
+          "expr": "fcsc_geyser_backlog",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true,
+          "refId": "backlog"
+        },
+        {
+          "expr": "fcsc_bot_info",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true,
+          "refId": "info"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "Value #info": true
+            },
+            "renameByName": {
+              "vm": "VM",
+              "git_branch": "Branch",
+              "Value #bot": "Bot",
+              "Value #geyser": "Geyser Rate",
+              "Value #clickhouse": "ClickHouse",
+              "Value #rpc": "RPC",
+              "Value #backlog": "Geyser Backlog"
+            },
+            "indexByName": {
+              "VM": 0,
+              "Branch": 1,
+              "Bot": 2,
+              "Geyser Rate": 3,
+              "Geyser Backlog": 4,
+              "ClickHouse": 5,
+              "RPC": 6
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Bot" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "ClickHouse" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "RPC" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Geyser Rate" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "value": null, "color": "red" },
+                    { "value": 1, "color": "green" }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "msg/s"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "VM", "desc": false }]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Geyser Receive Rate (All VMs)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "fcsc_geyser_recv_rate",
+          "legendFormat": "{{ vm }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "msg/s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Geyser Backlog (All VMs)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "fcsc_geyser_backlog",
+          "legendFormat": "{{ vm }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 100, "color": "yellow" },
+              { "value": 1000, "color": "red" }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Log Freshness (seconds since last log line)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "time() - fcsc_log_last_line_timestamp",
+          "legendFormat": "{{ vm }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 30, "color": "yellow" },
+              { "value": 120, "color": "red" }
+            ]
+          },
+          "decimals": 0
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

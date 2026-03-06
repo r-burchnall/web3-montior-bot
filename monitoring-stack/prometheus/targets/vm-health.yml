@@ -1,0 +1,14 @@
+# File-based service discovery for fcsc-agent instances.
+# Add VM targets here as they are deployed.
+# Format: https://prometheus.io/docs/guides/file-sd/
+#
+# Example:
+# - targets:
+#     - 'dev-ross.lxd:9100'
+#   labels:
+#     vm: 'dev-ross'
+#
+# - targets:
+#     - 'dev-matt.lxd:9100'
+#   labels:
+#     vm: 'dev-matt'
