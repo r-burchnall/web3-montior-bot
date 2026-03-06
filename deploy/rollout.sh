@@ -5,10 +5,10 @@ set -euo pipefail
 # Uses lxc file push to stage files and lxc exec to run installers.
 #
 # Usage:
-#   ./rollout.sh              # Deploy to all VMs
-#   ./rollout.sh vm1 vm2      # Deploy to specific VMs
-#   ./rollout.sh --agent-only # Only deploy the agent
-#   ./rollout.sh --promtail-only # Only deploy promtail
+#   ./deploy/rollout.sh              # Deploy to all VMs
+#   ./deploy/rollout.sh vm1 vm2      # Deploy to specific VMs
+#   ./deploy/rollout.sh --agent-only # Only deploy the agent
+#   ./deploy/rollout.sh --promtail-only # Only deploy promtail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -66,11 +66,8 @@ for vm in "${VMS[@]}"; do
         echo "  Pushing agent binary..."
         lxc file push "$BUILD_DIR/fcsc-agent" "$vm/tmp/fcsc-agent"
 
-        # Push service file if it exists for this VM
-        SERVICE_FILE="$BUILD_DIR/fcsc-agent.service"
-        if [ -f "$SERVICE_FILE" ]; then
-            lxc file push "$SERVICE_FILE" "$vm/tmp/fcsc-agent.service"
-        fi
+        echo "  Pushing service file..."
+        lxc file push "$SCRIPT_DIR/fcsc-agent.service" "$vm/tmp/fcsc-agent.service"
 
         echo "  Pushing installer..."
         lxc file push "$SCRIPT_DIR/install-agent.sh" "$vm/tmp/install-agent.sh"
@@ -88,15 +85,9 @@ for vm in "${VMS[@]}"; do
 
     # Deploy promtail
     if [ "$AGENT_ONLY" = false ]; then
-        PROMTAIL_CONFIG="$BUILD_DIR/promtail-config.yaml"
-        PROMTAIL_SERVICE="$BUILD_DIR/promtail.service"
-
-        if [ -f "$PROMTAIL_CONFIG" ]; then
-            lxc file push "$PROMTAIL_CONFIG" "$vm/tmp/promtail-config.yaml"
-        fi
-        if [ -f "$PROMTAIL_SERVICE" ]; then
-            lxc file push "$PROMTAIL_SERVICE" "$vm/tmp/promtail.service"
-        fi
+        echo "  Pushing promtail config..."
+        lxc file push "$SCRIPT_DIR/promtail-config.yaml" "$vm/tmp/promtail-config.yaml"
+        lxc file push "$SCRIPT_DIR/promtail.service" "$vm/tmp/promtail.service"
 
         echo "  Pushing promtail installer..."
         lxc file push "$SCRIPT_DIR/install-promtail.sh" "$vm/tmp/install-promtail.sh"

@@ -1,0 +1,15 @@
+[Unit]
+Description=FCSC Health Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/fcsc-agent --listen-addr :9100 --rpc-url http://64.130.40.37:8899 --clickhouse-url http://monitoring.lxd:8123 --log-scan-paths /home --log-scan-interval 60s --check-interval 5s --enable-checks all
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fcsc-agent
+
+[Install]
+WantedBy=multi-user.target

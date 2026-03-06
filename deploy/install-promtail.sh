@@ -66,13 +66,16 @@ mkdir -p "$CONFIG_DIR" "$POSITIONS_DIR"
 
 # Install config
 if [ -f "$STAGING_CONFIG" ]; then
-    if [ -f "$CONFIG_FILE" ] && cmp -s "$STAGING_CONFIG" "$CONFIG_FILE"; then
+    # Substitute hostname into the config
+    ACTUAL_HOSTNAME="$(hostname)"
+    sed "s/\${HOSTNAME}/$ACTUAL_HOSTNAME/g" "$STAGING_CONFIG" > "${STAGING_CONFIG}.resolved"
+    if [ -f "$CONFIG_FILE" ] && cmp -s "${STAGING_CONFIG}.resolved" "$CONFIG_FILE"; then
         echo "Config unchanged, skipping."
     else
-        cp "$STAGING_CONFIG" "$CONFIG_FILE"
-        echo "Config installed: $CONFIG_FILE"
+        cp "${STAGING_CONFIG}.resolved" "$CONFIG_FILE"
+        echo "Config installed: $CONFIG_FILE (vm=$ACTUAL_HOSTNAME)"
     fi
-    rm -f "$STAGING_CONFIG"
+    rm -f "$STAGING_CONFIG" "${STAGING_CONFIG}.resolved"
 elif [ ! -f "$CONFIG_FILE" ]; then
     echo "WARNING: No config found. Run configure-promtail.sh first."
     exit 1
