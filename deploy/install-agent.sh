@@ -19,6 +19,8 @@ if [ -f "$STAGING_BIN" ]; then
     if [ -f "$INSTALL_BIN" ] && cmp -s "$STAGING_BIN" "$INSTALL_BIN"; then
         echo "Binary unchanged, skipping."
     else
+        # Stop the service first to release the binary (Text file busy)
+        systemctl stop fcsc-agent 2>/dev/null || true
         cp "$STAGING_BIN" "$INSTALL_BIN"
         chmod +x "$INSTALL_BIN"
         echo "Binary installed: $INSTALL_BIN"
