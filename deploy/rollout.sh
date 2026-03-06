@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Rollout fcsc-agent and promtail to all VMs listed in vms.conf.
-# Uses lxc file push to stage files and lxc exec to run installers.
+# Uses lxc exec to push files and run installers.
 #
 # Usage:
 #   ./deploy/rollout.sh              # Deploy to all VMs
@@ -52,6 +52,14 @@ if [ "$PROMTAIL_ONLY" = false ] && [ ! -f "$BUILD_DIR/fcsc-agent" ]; then
     exit 1
 fi
 
+# Push a file into a container
+push_file() {
+    local src="$1"
+    local vm="$2"
+    local dest="$3"
+    $LXC file push "$src" "$vm$dest"
+}
+
 echo "Deploying to ${#VMS[@]} VM(s): ${VMS[*]}"
 echo ""
 
@@ -69,18 +77,21 @@ for vm in "${VMS[@]}"; do
 
     # Deploy agent
     if [ "$PROMTAIL_ONLY" = false ]; then
+        echo "  Stopping agent service..."
+        $LXC exec "$vm" -- systemctl stop fcsc-agent 2>/dev/null || true
+
         echo "  Pushing agent binary..."
-        $LXC file push "$BUILD_DIR/fcsc-agent" "$vm/tmp/fcsc-agent"
+        push_file "$BUILD_DIR/fcsc-agent" "$vm" "/tmp/fcsc-agent"
 
         echo "  Pushing service file..."
-        $LXC file push "$SCRIPT_DIR/fcsc-agent.service" "$vm/tmp/fcsc-agent.service"
+        push_file "$SCRIPT_DIR/fcsc-agent.service" "$vm" "/tmp/fcsc-agent.service"
 
         echo "  Pushing installer..."
-        $LXC file push "$SCRIPT_DIR/install-agent.sh" "$vm/tmp/install-agent.sh"
+        push_file "$SCRIPT_DIR/install-agent.sh" "$vm" "/tmp/install-agent.sh"
 
         echo "  Running installer..."
         $LXC exec "$vm" -- chmod +x /tmp/install-agent.sh
-        if lxc exec "$vm" -- /tmp/install-agent.sh; then
+        if $LXC exec "$vm" -- /tmp/install-agent.sh; then
             echo "  Agent: OK"
         else
             echo "  Agent: FAILED"
@@ -92,15 +103,15 @@ for vm in "${VMS[@]}"; do
     # Deploy promtail
     if [ "$AGENT_ONLY" = false ]; then
         echo "  Pushing promtail config..."
-        $LXC file push "$SCRIPT_DIR/promtail-config.yaml" "$vm/tmp/promtail-config.yaml"
-        $LXC file push "$SCRIPT_DIR/promtail.service" "$vm/tmp/promtail.service"
+        push_file "$SCRIPT_DIR/promtail-config.yaml" "$vm" "/tmp/promtail-config.yaml"
+        push_file "$SCRIPT_DIR/promtail.service" "$vm" "/tmp/promtail.service"
 
         echo "  Pushing promtail installer..."
-        $LXC file push "$SCRIPT_DIR/install-promtail.sh" "$vm/tmp/install-promtail.sh"
+        push_file "$SCRIPT_DIR/install-promtail.sh" "$vm" "/tmp/install-promtail.sh"
 
         echo "  Running promtail installer..."
         $LXC exec "$vm" -- chmod +x /tmp/install-promtail.sh
-        if lxc exec "$vm" -- /tmp/install-promtail.sh; then
+        if $LXC exec "$vm" -- /tmp/install-promtail.sh; then
             echo "  Promtail: OK"
         else
             echo "  Promtail: FAILED"
