@@ -8,5 +8,15 @@ providers:
     disableDeletion: false
     editable: true
     options:
-      path: /etc/grafana/provisioning/dashboards/fcsc
+      path: /var/lib/grafana/dashboards/fcsc
+      foldersFromFilesStructure: false
+
+  - name: host-health
+    orgId: 1
+    folder: Host Health
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards/health
       foldersFromFilesStructure: false

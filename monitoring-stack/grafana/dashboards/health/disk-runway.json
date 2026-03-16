@@ -1,0 +1,44 @@
+{
+  "title": "Disk Runway and Days to Full",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Disk Days to Full",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "host:disk_runway_days",
+          "legendFormat": "{{instance}} {{mountpoint}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Stateful Volume Growth Bytes/Day",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "host:stateful_volume_growth_bytes_per_day",
+          "legendFormat": "{{instance}} {{mountpoint}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk Free Percent",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "host:disk_free_percent",
+          "legendFormat": "{{instance}} {{mountpoint}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+    }
+  ]
+}

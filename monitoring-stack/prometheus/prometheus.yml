@@ -3,12 +3,20 @@ global:
   evaluation_interval: 5s
 
 rule_files:
-  - "rules/*.yml"
+  - /etc/prometheus/rules/*.yml
 
 scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          env: 'dev'
+
   - job_name: 'arbitrage'
     static_configs:
       - targets: ['otel-collector:8889']
+        labels:
+          env: 'dev'
 
   - job_name: 'fcsc-agent'
     scrape_interval: 5s
@@ -16,6 +24,59 @@ scrape_configs:
       - files:
           - 'targets/vm-health.yml'
         refresh_interval: 30s
+  
+  
+
+  - job_name: fastcar2-node-exporter
+    static_configs:
+      - targets: ["10.77.251.1:9100"]
+        labels:
+          env: 'dev'
+          source: 'node-exporter'
+
+  - job_name: fastcar1-node-exporter
+    static_configs:
+      - targets: ["64.130.40.37:9100"]
+        labels:
+          env: 'prod'
+          source: 'node-exporter'
+
+  - job_name: 'fastcar1-solana-validator'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['64.130.40.37:19100']
+        labels:
+          env: 'prod'
+          source: 'solana-validator'
+
+  - job_name: 'fastcar1-geyser'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['64.130.40.37:19101']
+        labels:
+          env: 'prod'
+          source: 'geyser'
+
+
+  - job_name: 'fastcar1-jet'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['64.130.40.37:19102']
+        labels:
+          env: 'prod'
+          source: 'jet'
+
+  - job_name: process-exporter
+    static_configs:
+      - targets: ["host.docker.internal:9256"]
+        labels:
+          env: 'dev'
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels:
+          env: 'dev'
 
 alerting:
   alertmanagers:

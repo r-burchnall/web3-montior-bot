@@ -1,39 +1,49 @@
 - targets: ['copytrading.lxd:9100']
   labels:
     vm: 'copytrading'
+    env: 'dev'
 
 - targets: ['dev-bolik.lxd:9100']
   labels:
     vm: 'dev-bolik'
+    env: 'dev'
 
 - targets: ['dev-claude.lxd:9100']
   labels:
     vm: 'dev-claude'
+    env: 'dev'
 
 - targets: ['dev-dave.lxd:9100']
   labels:
     vm: 'dev-dave'
+    env: 'dev'
 
 - targets: ['dev-lesik.lxd:9100']
   labels:
     vm: 'dev-lesik'
+    env: 'dev'
 
 - targets: ['dev-matt.lxd:9100']
   labels:
     vm: 'dev-matt'
+    env: 'dev'
 
 - targets: ['dev-mich.lxd:9100']
   labels:
     vm: 'dev-mich'
+    env: 'dev'
 
 - targets: ['dev-resla.lxd:9100']
   labels:
     vm: 'dev-resla'
+    env: 'dev'
 
 - targets: ['dev-ross.lxd:9100']
   labels:
     vm: 'dev-ross'
+    env: 'dev'
 
 - targets: ['dev-steve.lxd:9100']
   labels:
     vm: 'dev-steve'
+    env: 'dev'

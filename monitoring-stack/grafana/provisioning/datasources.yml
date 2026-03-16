@@ -15,3 +15,17 @@ datasources:
     access: proxy
     url: http://loki:3100
     editable: false
+
+  - name: Monitoring-Clickhouse
+    type: grafana-clickhouse-datasource
+    uid: DS_MONITORING_CLICKHOUSE
+    access: proxy
+    url: http://10.77.251.87:9000  # Changed to the HTTP port
+    editable: true
+    jsonData:
+      server: 10.77.251.87
+      port: 8123
+      defaultDatabase: default
+      username: default 
+      secureJsonData:
+        password: "default"

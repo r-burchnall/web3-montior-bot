@@ -1,0 +1,32 @@
+{
+  "title": "Host Deep Dive",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Disk Used Ratio",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "host:disk_used:ratio",
+          "legendFormat": "{{instance}} {{mountpoint}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Swap Usage Ratio",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "host:swap_usage:ratio",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+groups:
+  - name: host-health-recording
+    interval: 30s
+    rules:
+      - record: host:cpu_usage:ratio
+        expr: 1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+      - record: host:memory_usage:ratio
+        expr: >-
+          1 - (
+            node_memory_MemAvailable_bytes
+            /
+            node_memory_MemTotal_bytes
+          )
+
+      - record: host:swap_usage:ratio
+        expr: >-
+          (
+            node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes
+          ) / clamp_min(node_memory_SwapTotal_bytes, 1)
+
+      - record: host:disk_used:ratio
+        expr: >-
+          1 - (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}
+            /
+            node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}
+          )
+
+      - record: host:disk_days_to_full
+        expr: >-
+          (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}
+            /
+            clamp_min(-1 * deriv(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[6h]), 1)
+          ) / 86400
+
+      - record: host:disk_runway_days
+        expr: host:disk_days_to_full
+
+      - record: host:disk_free_percent
+        expr: >-
+          100 * (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}
+            /
+            node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}
+          )
+
+      - record: host:network_errors_total:rate5m
+        expr: >-
+          sum by (instance) (
+            rate(node_network_receive_errs_total[5m])
+            + rate(node_network_transmit_errs_total[5m])
+          )
+
+      - record: host:network_drops_total:rate5m
+        expr: >-
+          sum by (instance) (
+            rate(node_network_receive_drop_total[5m])
+            + rate(node_network_transmit_drop_total[5m])
+          )
+
+      - record: host:stateful_volume_growth_bytes_per_day
+        expr: >-
+          -1 * deriv(node_filesystem_avail_bytes{mountpoint=~"/var/lib/monitoring|/var/lib/noncritical-services"}[24h]) * 86400
+
+  - name: host-health-alerts
+    interval: 30s
+    rules:
+      - alert: HostDiskWarning
+        expr: >-
+          host:disk_used:ratio > 0.80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk usage warning on {{ $labels.instance }}"
+          description: "Disk usage is above 80% for at least 10 minutes."
+
+      - alert: HostDiskCritical
+        expr: >-
+          host:disk_used:ratio > 0.85
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk usage critical on {{ $labels.instance }}"
+          description: "Disk usage is above 85% for at least 10 minutes."
+
+      - alert: HostDiskEmergency
+        expr: >-
+          host:disk_used:ratio > 0.90
+        for: 5m
+        labels:
+          severity: emergency
+        annotations:
+          summary: "Disk usage emergency on {{ $labels.instance }}"
+          description: "Disk usage is above 90% for at least 5 minutes."
+
+      - alert: HostDiskRunwayWarning
+        expr: >-
+          host:disk_runway_days < 14
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk runway warning on {{ $labels.instance }}"
+          description: >-
+            Estimated days to full dropped below
+            14.
+
+      - alert: HostDiskRunwayCritical
+        expr: >-
+          host:disk_runway_days < 7
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk runway critical on {{ $labels.instance }}"
+          description: >-
+            Estimated days to full dropped below
+            7.
+
+      - alert: ContainerRestartStorm
+        expr: >-
+          changes(container_start_time_seconds{name!=""}[15m]) > 3
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container restart storm on {{ $labels.instance }}"
+          description: "A container restarted more than 3 times in 15 minutes."
+
+      - alert: MissingNodeExporterTelemetry
+        expr: absent(up{job="node-exporter"} == 1)
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node exporter telemetry missing"
+          description: "No fresh node exporter targets are up."
+
+      - alert: MissingCadvisorTelemetry
+        expr: absent(up{job="cadvisor"} == 1)
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "cAdvisor telemetry missing"
+          description: "No fresh cAdvisor targets are up."
