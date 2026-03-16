@@ -1,0 +1,477 @@
+{
+  "title": "Yellowstone Geyser gRPC",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {
+      "type": "row",
+      "title": "Slot Tracking",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Slot Status (by commitment)",
+      "description": "Latest slot received from Geyser plugin by commitment level",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "slot_status",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0, "pointSize": 5, "showPoints": "never"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 1}
+    },
+    {
+      "type": "timeseries",
+      "title": "Plugin Slot Status",
+      "description": "Latest slot processed in plugin-to-client queues",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "slot_status_plugin",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0, "pointSize": 5, "showPoints": "never"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 1}
+    },
+    {
+      "type": "timeseries",
+      "title": "Slot Lag (Geyser vs Plugin)",
+      "description": "Difference between Geyser slot and plugin slot — indicates processing lag",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "slot_status{status=\"processed\"} - slot_status_plugin{status=\"processed\"}",
+          "legendFormat": "processed lag"
+        },
+        {
+          "expr": "slot_status{status=\"confirmed\"} - slot_status_plugin{status=\"confirmed\"}",
+          "legendFormat": "confirmed lag"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 5, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 20}
+            ]
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 1}
+    },
+    {
+      "type": "row",
+      "title": "Connections & Subscriptions",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9},
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Active Connections",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "connections_total",
+          "legendFormat": "connections"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 50},
+              {"color": "red", "value": 100}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 10}
+    },
+    {
+      "type": "timeseries",
+      "title": "Subscriptions by Type",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "subscriptions_total",
+          "legendFormat": "{{endpoint}} / {{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "stacking": {"mode": "normal"}}
+        }
+      },
+      "gridPos": {"h": 8, "w": 10, "x": 4, "y": 10}
+    },
+    {
+      "type": "timeseries",
+      "title": "Client Disconnects Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(grpc_client_disconnects_total[1m])",
+          "legendFormat": "{{reason}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50, "stacking": {"mode": "normal"}}
+        }
+      },
+      "gridPos": {"h": 8, "w": 10, "x": 14, "y": 10}
+    },
+    {
+      "type": "timeseries",
+      "title": "Concurrent Subscriptions per TCP Connection",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "grpc_concurrent_subscribe_per_tcp_connection",
+          "legendFormat": "{{peer}}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 14}
+    },
+    {
+      "type": "row",
+      "title": "Throughput",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Messages Sent Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(grpc_message_sent_count[1m]))",
+          "legendFormat": "total msgs/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 19}
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Bytes Sent Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(grpc_bytes_sent[1m]))",
+          "legendFormat": "total"
+        },
+        {
+          "expr": "rate(traffic_sent_per_remote_ip_bytes[1m])",
+          "legendFormat": "{{remote_ip}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 19}
+    },
+    {
+      "type": "timeseries",
+      "title": "Subscriber Send Bandwidth Load",
+      "description": "Current send load per subscriber (bytes/sec)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "grpc_subscriber_send_bandwidth_load",
+          "legendFormat": "{{subscriber}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 19}
+    },
+    {
+      "type": "row",
+      "title": "Queue & Cache",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 27},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Message Queue Size",
+      "description": "Geyser message queue depth — spikes indicate backpressure",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "message_queue_size",
+          "legendFormat": "queue depth"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1000},
+              {"color": "red", "value": 5000}
+            ]
+          },
+          "color": {"mode": "continuous-GrYlRd"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 28}
+    },
+    {
+      "type": "timeseries",
+      "title": "Subscriber Queue Size",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "grpc_subscriber_queue_size",
+          "legendFormat": "{{subscriber}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 28}
+    },
+    {
+      "type": "timeseries",
+      "title": "Pre-encoded Cache Hit / Miss Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(yellowstone_grpc_pre_encoded_cache_hit[1m])",
+          "legendFormat": "hit {{type}}"
+        },
+        {
+          "expr": "rate(yellowstone_grpc_pre_encoded_cache_miss[1m])",
+          "legendFormat": "miss {{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 28}
+    },
+    {
+      "type": "timeseries",
+      "title": "Batch Size Distribution (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(yellowstone_geyser_batch_size_bucket[5m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(yellowstone_geyser_batch_size_bucket[5m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 36}
+    },
+    {
+      "type": "timeseries",
+      "title": "Account Update Data Size (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(geyser_account_update_data_size_kib_bucket[5m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(geyser_account_update_data_size_kib_bucket[5m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kbytes",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 36}
+    },
+    {
+      "type": "row",
+      "title": "gRPC Method Calls & Outbound",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 44},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Method Call Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(yellowstone_grpc_method_call_count[1m])",
+          "legendFormat": "{{method}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50, "stacking": {"mode": "normal"}}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 45}
+    },
+    {
+      "type": "timeseries",
+      "title": "Service Outbound Bytes per Stream",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "yellowstone_grpc_service_outbound_bytes",
+          "legendFormat": "{{stream}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 45}
+    },
+    {
+      "type": "row",
+      "title": "Errors & Drops",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 53},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Missed Status Messages Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(missed_status_message_total[1m])",
+          "legendFormat": "{{commitment}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20},
+          "color": {"fixedColor": "red", "mode": "fixed"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 54}
+    },
+    {
+      "type": "timeseries",
+      "title": "Events Dropped Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(geyser_event_dropped_total[1m])",
+          "legendFormat": "{{reason}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50},
+          "color": {"fixedColor": "orange", "mode": "fixed"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 54}
+    },
+    {
+      "type": "timeseries",
+      "title": "Subscription Limit Exceeded Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(yellowstone_grpc_subscription_limit_exceeded_total[1m])",
+          "legendFormat": "{{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50},
+          "color": {"fixedColor": "red", "mode": "fixed"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 54}
+    },
+    {
+      "type": "stat",
+      "title": "Invalid Full Blocks",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(invalid_full_blocks_total)",
+          "legendFormat": "total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 62}
+    }
+  ]
+}

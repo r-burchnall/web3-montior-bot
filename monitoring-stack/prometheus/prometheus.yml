@@ -57,7 +57,6 @@ scrape_configs:
           env: 'prod'
           source: 'geyser'
 
-
   - job_name: 'fastcar1-jet'
     scrape_interval: 5s
     static_configs:
@@ -65,6 +64,14 @@ scrape_configs:
         labels:
           env: 'prod'
           source: 'jet'
+
+  - job_name: 'fastcar1-solana-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['64.130.40.37:19103']
+        labels:
+          env: 'prod'
+          source: 'solana-exporter'
 
   - job_name: process-exporter
     static_configs:

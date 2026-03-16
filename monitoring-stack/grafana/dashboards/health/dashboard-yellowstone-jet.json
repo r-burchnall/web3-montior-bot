@@ -1,0 +1,856 @@
+{
+  "title": "Yellowstone Jet",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {
+      "type": "row",
+      "title": "Slot & Chain State",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Slot Received",
+      "description": "Latest slot received from gRPC stream by commitment level",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "grpc_slot_received",
+          "legendFormat": "{{commitment}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 1}
+    },
+    {
+      "type": "timeseries",
+      "title": "Blockhash Queue Size",
+      "description": "Blocks currently cached for recent blockhash lookups",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "blockhash_queue_size",
+          "legendFormat": "queue size"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 1}
+    },
+    {
+      "type": "timeseries",
+      "title": "Cluster Nodes & Leaders",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "cluster_nodes_total",
+          "legendFormat": "gossip nodes"
+        },
+        {
+          "expr": "cluster_leaders_schedule_size",
+          "legendFormat": "leaders in schedule"
+        },
+        {
+          "expr": "leader_schedule_hashmap_size",
+          "legendFormat": "schedule map entries"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 1}
+    },
+    {
+      "type": "row",
+      "title": "Transaction Pipeline",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Transaction Rates",
+      "description": "Received, landed, and TPU-denied transaction rates",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(sts_received_total[1m])",
+          "legendFormat": "received/s"
+        },
+        {
+          "expr": "rate(sts_landed_total[1m])",
+          "legendFormat": "landed/s"
+        },
+        {
+          "expr": "rate(sts_tpu_denied_total[1m])",
+          "legendFormat": "tpu denied/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10}
+    },
+    {
+      "type": "timeseries",
+      "title": "Landing Rate %",
+      "description": "Percentage of received transactions that land on-chain",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(sts_landed_total[5m]) / rate(sts_received_total[5m]) * 100",
+          "legendFormat": "land rate %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 30},
+              {"color": "green", "value": 60}
+            ]
+          },
+          "color": {"mode": "continuous-GrYlRd"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10}
+    },
+    {
+      "type": "timeseries",
+      "title": "Transaction Pool & Inflight",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sts_pool_size",
+          "legendFormat": "pool"
+        },
+        {
+          "expr": "sts_inflight_size",
+          "legendFormat": "inflight"
+        },
+        {
+          "expr": "rooted_transactions_pool_size",
+          "legendFormat": "rooted (landed) pool"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 18}
+    },
+    {
+      "type": "timeseries",
+      "title": "Send Success / Error Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(send_transaction_success[1m])",
+          "legendFormat": "success/s"
+        },
+        {
+          "expr": "rate(send_transaction_error[1m])",
+          "legendFormat": "error/s"
+        },
+        {
+          "expr": "rate(send_transaction_attempt[1m])",
+          "legendFormat": "attempts/s {{leader}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "error/s"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 18}
+    },
+    {
+      "type": "row",
+      "title": "Latency",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 26},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Forward Latency (p50 / p95 / p99)",
+      "description": "Transaction forwarding latency — critical for HFT",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(forward_latency_bucket[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(forward_latency_bucket[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(forward_latency_bucket[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.05},
+              {"color": "red", "value": 0.2}
+            ]
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 27}
+    },
+    {
+      "type": "timeseries",
+      "title": "E2E Send Latency (p50 / p95 / p99)",
+      "description": "End-to-end transaction send to leader + ack latency",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(send_transaction_e2e_latency_bucket[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(send_transaction_e2e_latency_bucket[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(send_transaction_e2e_latency_bucket[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.1},
+              {"color": "red", "value": 0.5}
+            ]
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 27}
+    },
+    {
+      "type": "timeseries",
+      "title": "Leader RTT (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(leader_rtt_bucket[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(leader_rtt_bucket[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0},
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 27}
+    },
+    {
+      "type": "timeseries",
+      "title": "New Slot Arrival Interval",
+      "description": "Time between consecutive new slots — jitter here degrades HFT timing",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(new_slot_arrival_interval_ms_bucket[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(new_slot_arrival_interval_ms_bucket[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 35}
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Message Handle Time (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(grpc_message_handle_time_us_bucket[1m]))",
+          "legendFormat": "p50 {{type}}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(grpc_message_handle_time_us_bucket[1m]))",
+          "legendFormat": "p99 {{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "\u00b5s",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 35}
+    },
+    {
+      "type": "row",
+      "title": "QUIC Connections",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 43},
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Active QUIC Connections",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "jet_tpu_client_active_quic_connection",
+          "legendFormat": "connections"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 44}
+    },
+    {
+      "type": "stat",
+      "title": "Active TX Senders",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "jet_tpu_client_active_quic_tx_senders",
+          "legendFormat": "senders"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 44}
+    },
+    {
+      "type": "stat",
+      "title": "Gateway Connected",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "gateway_connected",
+          "legendFormat": "{{endpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {"options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 44}
+    },
+    {
+      "type": "stat",
+      "title": "Leader MTU",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "leader_mtu",
+          "legendFormat": "{{leader}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 44}
+    },
+    {
+      "type": "timeseries",
+      "title": "QUIC Connection Success / Failure Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(quic_gw_connection_success[1m])",
+          "legendFormat": "success/s"
+        },
+        {
+          "expr": "rate(quic_gw_connection_failure[1m])",
+          "legendFormat": "failure/s"
+        },
+        {
+          "expr": "rate(quic_gw_connection_close[1m])",
+          "legendFormat": "close/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "failure/s"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 44}
+    },
+    {
+      "type": "timeseries",
+      "title": "QUIC Connection Time (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(quic_gw_connection_time_ms_bucket[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(quic_gw_connection_time_ms_bucket[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 48}
+    },
+    {
+      "type": "timeseries",
+      "title": "QUIC GW Connecting / Evictions",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "quic_gw_connecting_gauge",
+          "legendFormat": "connecting"
+        },
+        {
+          "expr": "quic_gw_ongoing_evictions",
+          "legendFormat": "ongoing evictions"
+        },
+        {
+          "expr": "jet_tpu_num_conn_to_evict",
+          "legendFormat": "pending evictions"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 48}
+    },
+    {
+      "type": "timeseries",
+      "title": "Connection Cache Hit / Miss Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(quic_gw_tx_connection_cache_hit[1m])",
+          "legendFormat": "cache hit/s"
+        },
+        {
+          "expr": "rate(quic_gw_tx_connection_cache_miss[1m])",
+          "legendFormat": "cache miss/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 48}
+    },
+    {
+      "type": "row",
+      "title": "QUIC Worker & TX Forwarding",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 56},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "TX Dropped / Processed / Relayed Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(quic_gw_worker_tx_process_cnt[1m])",
+          "legendFormat": "processed/s"
+        },
+        {
+          "expr": "rate(quic_gw_tx_relayed_to_worker_cnt[1m])",
+          "legendFormat": "relayed/s"
+        },
+        {
+          "expr": "rate(quic_gw_drop_tx_cnt[1m])",
+          "legendFormat": "dropped/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "dropped/s"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 57}
+    },
+    {
+      "type": "timeseries",
+      "title": "Leader Prediction Hit / Miss Rate",
+      "description": "How well Jet predicts upcoming leaders for proactive connections",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(quic_gw_leader_prediction_hit[1m])",
+          "legendFormat": "hit/s"
+        },
+        {
+          "expr": "rate(quic_gw_leader_prediction_miss[1m])",
+          "legendFormat": "miss/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 57}
+    },
+    {
+      "type": "timeseries",
+      "title": "TX Blocked by Connecting",
+      "description": "Transactions queued waiting for QUIC connection to establish",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "jet_tpu_txn_blocked_by_connecting",
+          "legendFormat": "blocked txns"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "red", "value": 100}
+            ]
+          },
+          "color": {"mode": "continuous-GrYlRd"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 65}
+    },
+    {
+      "type": "timeseries",
+      "title": "QUIC Send Attempts",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(quic_send_attempts[1m])",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 65}
+    },
+    {
+      "type": "timeseries",
+      "title": "Orphan Connections",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "jet_tpu_client_orphan_connections",
+          "legendFormat": "current orphans"
+        },
+        {
+          "expr": "rate(jet_tpu_client_evicted_orphan_connections[1m])",
+          "legendFormat": "evicted/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 65}
+    },
+    {
+      "type": "row",
+      "title": "Leader Schedule",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 73},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Leader Schedule RPC Fetch Time (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(leader_schedule_rpc_fetch_ms_bucket[5m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(leader_schedule_rpc_fetch_ms_bucket[5m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 74}
+    },
+    {
+      "type": "timeseries",
+      "title": "Schedule Entries Added / Cleaned",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "leader_schedule_entries_added_last_update",
+          "legendFormat": "added"
+        },
+        {
+          "expr": "leader_schedule_entries_cleaned_last_update",
+          "legendFormat": "cleaned"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 74}
+    },
+    {
+      "type": "timeseries",
+      "title": "Slot Tracking BTreeMap Size",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "slot_tracking_btreemap_size",
+          "legendFormat": "entries"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 74}
+    },
+    {
+      "type": "row",
+      "title": "Errors",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 82},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Transaction Decode / Deserialize Errors",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(transaction_decode_errors_total[1m])",
+          "legendFormat": "decode {{type}}"
+        },
+        {
+          "expr": "rate(transaction_deserialize_errors_total[1m])",
+          "legendFormat": "deserialize {{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50},
+          "color": {"fixedColor": "orange", "mode": "fixed"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 83}
+    },
+    {
+      "type": "timeseries",
+      "title": "Transaction Handler Errors",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(transaction_handler_error_total[1m])",
+          "legendFormat": "{{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50},
+          "color": {"fixedColor": "red", "mode": "fixed"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 83}
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Channel Send Failures & Misc Errors",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(grpc_channel_send_failures_total[1m])",
+          "legendFormat": "channel send failures/s"
+        },
+        {
+          "expr": "rate(shield_policies_not_found_total[1m])",
+          "legendFormat": "shield policies not found/s"
+        },
+        {
+          "expr": "rate(quic_gw_unreachable_peer_count[1m])",
+          "legendFormat": "unreachable peers/s"
+        },
+        {
+          "expr": "rate(jet_tpu_client_invalid_txn_packet_size[1m])",
+          "legendFormat": "oversized packets/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 83}
+    },
+    {
+      "type": "timeseries",
+      "title": "Cluster Identity Stake",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "cluster_identity_stake",
+          "legendFormat": "{{kind}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 91}
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC Messages Processed Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(grpc_messages_processed_total[1m])",
+          "legendFormat": "{{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "stacking": {"mode": "normal"}}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 91}
+    }
+  ]
+}

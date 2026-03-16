@@ -1,0 +1,572 @@
+{
+  "title": "Solana Exporter (fastcar1)",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {
+      "type": "row",
+      "title": "Node Health",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Healthy",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_is_healthy{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {"options": {"0": {"text": "UNHEALTHY", "color": "red"}, "1": {"text": "HEALTHY", "color": "green"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Active",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_is_active{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {"options": {"0": {"text": "INACTIVE", "color": "yellow"}, "1": {"text": "ACTIVE", "color": "green"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "yellow", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Slots Behind",
+      "description": "Number of slots the node is behind the cluster tip",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_num_slots_behind{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 50}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 6, "y": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Current Epoch",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_epoch_number{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 9, "y": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Cluster Validators",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_cluster_validator_count{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 12, "y": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Active Stake (SOL)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_cluster_active_stake{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 15, "y": 1}
+    },
+    {
+      "type": "stat",
+      "title": "Exporter Up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {"options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 3, "x": 18, "y": 1}
+    },
+    {
+      "type": "row",
+      "title": "Slot & Block Tracking",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Node Slot Height vs Cluster Root Slot",
+      "description": "Gap between these indicates how far behind the node is from finalized cluster state",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_slot_height{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "node slot"
+        },
+        {
+          "expr": "solana_cluster_root_slot{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "cluster root"
+        },
+        {
+          "expr": "solana_cluster_last_vote{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "cluster last vote"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6}
+    },
+    {
+      "type": "timeseries",
+      "title": "Slots Behind",
+      "description": "Slots the node is behind the cluster — critical for HFT latency",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_num_slots_behind{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "slots behind"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 50}
+            ]
+          },
+          "color": {"mode": "continuous-GrYlRd"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6}
+    },
+    {
+      "type": "timeseries",
+      "title": "Block Height",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_block_height{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "block height"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 14}
+    },
+    {
+      "type": "timeseries",
+      "title": "Transaction Throughput",
+      "description": "Rate of transactions processed by the node",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(solana_node_transactions_total{job=\"fastcar1-solana-exporter\"}[1m])",
+          "legendFormat": "tx/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 14}
+    },
+    {
+      "type": "timeseries",
+      "title": "First Available Block & Minimum Ledger Slot",
+      "description": "How much history the node retains",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_first_available_block{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "first available block"
+        },
+        {
+          "expr": "solana_node_minimum_ledger_slot{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "min ledger slot"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 14}
+    },
+    {
+      "type": "row",
+      "title": "Epoch Progress",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 22},
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Epoch Progress %",
+      "description": "How far through the current epoch we are",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "(solana_node_slot_height{job=\"fastcar1-solana-exporter\"} - solana_node_epoch_first_slot{job=\"fastcar1-solana-exporter\"}) / (solana_node_epoch_last_slot{job=\"fastcar1-solana-exporter\"} - solana_node_epoch_first_slot{job=\"fastcar1-solana-exporter\"}) * 100",
+          "legendFormat": "epoch progress"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 25},
+              {"color": "yellow", "value": 75},
+              {"color": "orange", "value": 90}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 23}
+    },
+    {
+      "type": "timeseries",
+      "title": "Epoch Slot Range",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_node_epoch_first_slot{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "epoch first slot"
+        },
+        {
+          "expr": "solana_node_epoch_last_slot{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "epoch last slot"
+        },
+        {
+          "expr": "solana_node_slot_height{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "current slot"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 10, "x": 6, "y": 23}
+    },
+    {
+      "type": "timeseries",
+      "title": "Cluster Slots by Epoch",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_cluster_slots_by_epoch_total{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "epoch {{epoch}} — {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 23}
+    },
+    {
+      "type": "row",
+      "title": "Validator Leader Slots",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Leader Slots by Epoch (valid vs skipped)",
+      "description": "Leader slot outcomes per validator per epoch",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_validator_leader_slots_by_epoch_total{job=\"fastcar1-solana-exporter\", status=\"valid\"}",
+          "legendFormat": "valid — {{nodekey}}"
+        },
+        {
+          "expr": "solana_validator_leader_slots_by_epoch_total{job=\"fastcar1-solana-exporter\", status=\"skipped\"}",
+          "legendFormat": "skipped — {{nodekey}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50, "stacking": {"mode": "normal"}}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byRegexp", "options": "^skipped.*"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          },
+          {
+            "matcher": {"id": "byRegexp", "options": "^valid.*"},
+            "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+    },
+    {
+      "type": "timeseries",
+      "title": "Leader Slots Total (valid vs skipped)",
+      "description": "Cumulative leader slot outcomes across all epochs",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "solana_validator_leader_slots_total{job=\"fastcar1-solana-exporter\", status=\"valid\"}",
+          "legendFormat": "valid — {{nodekey}}"
+        },
+        {
+          "expr": "solana_validator_leader_slots_total{job=\"fastcar1-solana-exporter\", status=\"skipped\"}",
+          "legendFormat": "skipped — {{nodekey}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byRegexp", "options": "^skipped.*"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          },
+          {
+            "matcher": {"id": "byRegexp", "options": "^valid.*"},
+            "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+    },
+    {
+      "type": "row",
+      "title": "Exporter Process Health",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 40},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Exporter CPU Usage",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total{job=\"fastcar1-solana-exporter\"}[1m])",
+          "legendFormat": "cpu cores"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 41}
+    },
+    {
+      "type": "timeseries",
+      "title": "Exporter Memory",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "resident"
+        },
+        {
+          "expr": "go_memstats_heap_alloc_bytes{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "heap alloc"
+        },
+        {
+          "expr": "go_memstats_heap_inuse_bytes{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "heap in-use"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 41}
+    },
+    {
+      "type": "timeseries",
+      "title": "Goroutines & File Descriptors",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "go_goroutines{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "goroutines"
+        },
+        {
+          "expr": "process_open_fds{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "open fds"
+        },
+        {
+          "expr": "process_max_fds{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "max fds"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 41}
+    },
+    {
+      "type": "timeseries",
+      "title": "Scrape Duration",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "scrape_duration_seconds{job=\"fastcar1-solana-exporter\"}",
+          "legendFormat": "scrape duration"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 15},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "color": {"mode": "continuous-GrYlRd"}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 49}
+    },
+    {
+      "type": "timeseries",
+      "title": "Go GC Duration (p50 / p99)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "go_gc_duration_seconds{job=\"fastcar1-solana-exporter\", quantile=\"0.5\"}",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "go_gc_duration_seconds{job=\"fastcar1-solana-exporter\", quantile=\"1\"}",
+          "legendFormat": "p100 (max)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 0}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 49}
+    }
+  ]
+}
