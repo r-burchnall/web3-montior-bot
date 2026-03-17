@@ -65,7 +65,7 @@ services:
       - monitoring
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.115.0
+    image: otel/opentelemetry-collector-contrib:0.147.0
     container_name: monitoring-otel-collector
     restart: unless-stopped
     volumes:
