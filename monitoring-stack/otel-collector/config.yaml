@@ -1,0 +1,49 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+  # Map OTel resource attributes into Loki labels for filtering
+  resource:
+    attributes:
+      - action: insert
+        key: loki.resource.labels
+        value: service.name, developer.name, deployment.environment, service.instance.id, run.id
+
+exporters:
+  # Traces -> Tempo (internal Docker network)
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Logs -> Loki (OTLP HTTP ingestion)
+  otlphttp/loki:
+    endpoint: "http://loki:3100/otlp"
+
+  # Metrics -> Prometheus scrape endpoint
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: arbitrage
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/tempo]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlphttp/loki]
+
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]

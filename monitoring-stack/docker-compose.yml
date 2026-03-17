@@ -64,6 +64,24 @@ services:
     networks:
       - monitoring
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.0
+    container_name: monitoring-otel-collector
+    restart: unless-stopped
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    command:
+      - '--config=/etc/otelcol-contrib/config.yaml'
+    ports:
+      - "4317:4317"   # OTLP gRPC - accepts telemetry from dev containers
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics endpoint (scraped by prometheus)
+    depends_on:
+      - tempo
+      - loki
+    networks:
+      - monitoring
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.2
     container_name: cadvisor

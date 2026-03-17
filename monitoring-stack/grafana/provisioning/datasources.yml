@@ -16,6 +16,28 @@ datasources:
     url: http://loki:3100
     editable: false
 
+  - name: Tempo
+    type: tempo
+    uid: DS_TEMPO
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: DS_LOKI
+        tags:
+          - key: developer.name
+          - key: service.instance.id
+          - key: run.id
+      serviceMap:
+        datasourceUid: DS_PROMETHEUS
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: DS_LOKI
+
   - name: Monitoring-Clickhouse
     type: grafana-clickhouse-datasource
     uid: DS_MONITORING_CLICKHOUSE
