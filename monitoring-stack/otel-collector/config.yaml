@@ -14,6 +14,13 @@ processors:
       - action: insert
         key: loki.resource.labels
         value: service.name, developer.name, deployment.environment, service.instance.id, run.id
+  # Drop DEBUG/INFO logs from prod to avoid overwhelming Loki.
+  # Prod bots write full logs to local files anyway.
+  filter/prod-logs:
+    error_mode: ignore
+    logs:
+      log_record:
+        - 'resource.attributes["deployment.environment"] == "prod" and severity_number < 9'
 
 exporters:
   # Traces -> Tempo (internal Docker network)
@@ -40,7 +47,7 @@ service:
 
     logs:
       receivers: [otlp]
-      processors: [batch, resource]
+      processors: [filter/prod-logs, batch, resource]
       exporters: [otlphttp/loki]
 
     metrics:
