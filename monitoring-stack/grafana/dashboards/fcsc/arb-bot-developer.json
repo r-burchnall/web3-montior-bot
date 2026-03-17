@@ -1,0 +1,244 @@
+{
+  "uid": "arb-bot-developer",
+  "title": "Arb Bot — Developer",
+  "description": "Single developer arbitrage bot performance dashboard",
+  "tags": ["arbitrage", "developer"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "developer",
+        "type": "query",
+        "label": "Developer",
+        "datasource": { "uid": "DS_PROMETHEUS" },
+        "query": "label_values(arbitrage_target_info, developer_name)",
+        "refresh": 2,
+        "sort": 1,
+        "current": {},
+        "includeAll": false,
+        "multi": false
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "label": "Instance",
+        "datasource": { "uid": "DS_PROMETHEUS" },
+        "query": "label_values(arbitrage_target_info{developer_name=\"$developer\"}, exported_instance)",
+        "refresh": 2,
+        "sort": 1,
+        "current": {},
+        "includeAll": false,
+        "multi": false,
+        "hide": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Overview",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Geyser Account Updates / sec",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "options": { "colorMode": "background_solid", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 100}, {"color": "green", "value": 1000}] } } },
+      "targets": [{ "refId": "A", "expr": "sum(rate(arbitrage_arbitrage_geyser_update_count_total{exported_instance=\"$instance\", update_type=\"Account\"}[$__rate_interval]))" }]
+    },
+    {
+      "type": "stat",
+      "title": "Landed Arbs",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "options": { "colorMode": "background_solid", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "blue", "value": null}] } } },
+      "targets": [{ "refId": "A", "expr": "sum(arbitrage_arbitrage_landed_arb_count_total{exported_instance=\"$instance\"})" }]
+    },
+    {
+      "type": "stat",
+      "title": "Quote Latency p99",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "options": { "colorMode": "background_solid", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 20}] } } },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_quote_process_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))" }]
+    },
+    {
+      "type": "stat",
+      "title": "Executor Latency p99",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "options": { "colorMode": "background_solid", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 200}] } } },
+      "targets": [{ "refId": "A", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_executor_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))" }]
+    },
+    {
+      "type": "row",
+      "title": "Geyser Ingestion",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Geyser Update Rate by Type",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 5, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "sum by (update_type) (rate(arbitrage_arbitrage_geyser_update_count_total{exported_instance=\"$instance\", cared_about=\"\"}[$__rate_interval]))", "legendFormat": "{{update_type}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Transaction Updates (cared about vs ignored)",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "rate(arbitrage_arbitrage_geyser_update_count_total{exported_instance=\"$instance\", update_type=\"Transaction\", cared_about=\"true\"}[$__rate_interval])", "legendFormat": "Relevant txs" },
+        { "refId": "B", "expr": "rate(arbitrage_arbitrage_geyser_update_count_total{exported_instance=\"$instance\", update_type=\"Transaction\", cared_about=\"false\"}[$__rate_interval])", "legendFormat": "Ignored txs" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Quoting",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Quote Process Duration",
+      "description": "End-to-end quoting pipeline latency",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(arbitrage_arbitrage_quote_process_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(arbitrage_arbitrage_quote_process_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_quote_process_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Individual Quote Duration",
+      "description": "Per-quote calculation latency",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(arbitrage_arbitrage_quote_individual_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(arbitrage_arbitrage_quote_individual_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_quote_individual_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Search & Execution",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Search Duration",
+      "description": "Time to find the best arbitrage route",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(arbitrage_arbitrage_search_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(arbitrage_arbitrage_search_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_search_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Executor Latency",
+      "description": "End-to-end latency from Geyser update to transaction execution",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(arbitrage_arbitrage_executor_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(arbitrage_arbitrage_executor_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_executor_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Pool Updates",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Pool Update Duration",
+      "description": "Time to update pool state from a transaction",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(arbitrage_arbitrage_pool_update_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(arbitrage_arbitrage_pool_update_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_pool_update_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Pool Update Rate",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(arbitrage_arbitrage_pool_update_duration_ms_count{exported_instance=\"$instance\"}[$__rate_interval]))", "legendFormat": "updates/sec" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Infrastructure",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "RPC Latency",
+      "description": "Latency of RPC calls for dynamic pool loading",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(arbitrage_arbitrage_rpc_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(arbitrage_arbitrage_rpc_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_rpc_latency_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "ALT Loading",
+      "datasource": { "uid": "DS_PROMETHEUS" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.99, sum by (le) (rate(arbitrage_arbitrage_alt_load_duration_ms_bucket{exported_instance=\"$instance\"}[$__rate_interval])))", "legendFormat": "Duration p99" },
+        { "refId": "B", "expr": "rate(arbitrage_arbitrage_alt_load_count_total{exported_instance=\"$instance\"}[$__rate_interval])", "legendFormat": "Load rate" }
+      ]
+    }
+  ]
+}
