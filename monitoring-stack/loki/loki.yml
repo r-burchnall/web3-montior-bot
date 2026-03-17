@@ -24,9 +24,19 @@ schema_config:
         prefix: index_
         period: 24h
 
+distributor:
+  otlp_config:
+    default_resource_attributes_as_index_labels:
+      - service.name
+      - deployment.environment
+      - service.instance.id
+      - developer.name
+      - run.id
+
 limits_config:
   retention_period: 168h  # 7 days
   max_query_series: 5000
+  allow_structured_metadata: true
 
 compactor:
   working_directory: /loki/compactor
