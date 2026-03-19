@@ -12,3 +12,4 @@ fcsc-agent/vendor/
 
 # OS
 .DS_Store
+.env
