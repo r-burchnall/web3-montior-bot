@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
       - ./prometheus/targets:/etc/prometheus/targets:ro
       - prometheus-data:/prometheus
     command:
@@ -50,11 +51,14 @@ services:
     volumes:
       - ./grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
       - ./grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./grafana/provisioning/alerting.yml:/etc/grafana/provisioning/alerting/alerting.yml:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
     ports:
       - "13000:3000"
     depends_on:

@@ -1,0 +1,21 @@
+groups:
+  - name: arbitrage-alerts
+    interval: 30s
+    rules:
+      - alert: GeyserUpdateRateLow
+        expr: >-
+          sum by (exported_instance) (
+            rate(arbitrage_arbitrage_geyser_update_count_total{update_type="Account"}[5m])
+          )
+          * on(exported_instance) group_left(developer_name)
+            (arbitrage_target_info{developer_name="prod"})
+          < 100
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Geyser update rate low for prod"
+          description: >-
+            Geyser account updates dropped below 100/s for 15 minutes
+            on instance {{ $labels.exported_instance }}
+            (current: {{ $value | printf "%.1f" }}/s).
