@@ -7,8 +7,8 @@ contactPoints:
       - uid: telegram-arb-alerts
         type: telegram
         settings:
-          bottoken: $TELEGRAM_BOT_TOKEN
-          chatid: "$TELEGRAM_CHAT_ID"
+          bottoken: "8674250017:AAEEkQJR54zaqdpFxXQ-QVEgGZijErhuuPY"
+          chatid: "-5158636501"
 
 policies:
   - orgId: 1
