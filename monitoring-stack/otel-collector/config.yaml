@@ -13,7 +13,7 @@ processors:
     attributes:
       - action: insert
         key: loki.resource.labels
-        value: service.name, developer.name, deployment.environment, service.instance.id, run.id
+        value: service.name, service.namespace, developer.name, deployment.environment, service.instance.id, run.id
   # Drop DEBUG and TRACE logs — only forward INFO+ to Loki.
   # All levels still go to local log files on each host.
   filter/drop-debug:
